@@ -6,11 +6,28 @@ import cv2
 import mediapipe as mp
 import mouse
 import pyautogui
+from scipy.signal import savgol_filter
+
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_hands = mp.solutions.hands
 
 width, height= pyautogui.size()
+
+
+max_amt = 19
+x = [1] * (max_amt+1)
+y = [1] * (max_amt+1)
+# These are to calculate the smoothing of the noise of the mouse positions s
+def filter_pos_noise_smooth(noise_x,noise_y):
+  
+  x.append(noise_x)
+  y.append(noise_y)
+
+  y_filt = savgol_filter(y[-(max_amt+1):-1],max_amt,4)
+  x_filt = savgol_filter(x[-(max_amt+1):-1],max_amt,4)
+
+  return x_filt[-1],y_filt[-1]
 
 # For webcam input:
 cap = cv2.VideoCapture(0)
@@ -38,9 +55,10 @@ with mp_hands.Hands(
       for hand_landmarks in results.multi_hand_landmarks:
         tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
         #pyautogui.moveTo(-tip.x*width, tip.y*height)
-        x,y = -tip.x*width, tip.y*height
-        mouse.move(-tip.x*width, tip.y*height)
-        last_x,last_y = x,y
+        
+        noise_x,noise_y = tip.x, tip.y
+        filt_x,filt_y = filter_pos_noise_smooth(noise_x,noise_y)
+        mouse.move(-filt_x*width, filt_y*height)
 
         mp_drawing.draw_landmarks(
             image,
