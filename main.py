@@ -4,9 +4,13 @@
 
 import cv2
 import mediapipe as mp
+import mouse
+import pyautogui
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_hands = mp.solutions.hands
+
+width, height= pyautogui.size()
 
 # For webcam input:
 cap = cv2.VideoCapture(0)
@@ -32,6 +36,12 @@ with mp_hands.Hands(
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     if results.multi_hand_landmarks:
       for hand_landmarks in results.multi_hand_landmarks:
+        tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
+        #pyautogui.moveTo(-tip.x*width, tip.y*height)
+        x,y = -tip.x*width, tip.y*height
+        mouse.move(-tip.x*width, tip.y*height)
+        last_x,last_y = x,y
+
         mp_drawing.draw_landmarks(
             image,
             hand_landmarks,
