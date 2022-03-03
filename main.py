@@ -16,6 +16,9 @@ preY = 0
 curX = 0
 curY = 0
 
+isClicking = False
+click_threshold = 20
+
 # For webcam input:
 cap = cv2.VideoCapture(0)
 with mp_hands.Hands(
@@ -39,6 +42,28 @@ with mp_hands.Hands(
       for hand_landmarks in results.multi_hand_landmarks:
         index_knuck = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_MCP] # Bottom knuckle of index finger
         
+        index_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
+        index_pip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_PIP]
+        index_dip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_DIP]
+
+        # on screen distance ( not camera postion which is from 0 to 1 )
+        click_dist_y = abs(index_tip.y*height - index_dip.y*height)
+        click_dist_x = abs(index_tip.x*width - index_dip.x*width)
+
+        tip_screen_y = index_tip.y*height
+        dip_screen_y = index_dip.y*height
+
+
+
+        if(tip_screen_y < dip_screen_y) and not isClicking:
+          mouse.release()
+          isClicking = True
+
+        if(tip_screen_y > dip_screen_y) and isClicking:
+          mouse.press()
+          isClicking = False
+
+
         # The idea is that the previus position will influence
         # the next position according to some distance value
         # Dividing allows for a dampening effect.
@@ -49,6 +74,8 @@ with mp_hands.Hands(
 
         preX = curX
         preY = curY 
+
+        cv2.imshow('MediaPipe Hands', cv2.flip(image, 1))
 
     if cv2.waitKey(5) & 0xFF == 27:
       break
