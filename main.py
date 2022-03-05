@@ -41,7 +41,6 @@ with mp_hands.Hands(
     if results.multi_hand_landmarks:
       for hand_landmarks in results.multi_hand_landmarks:
         index_knuck = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_MCP] # Bottom knuckle of index finger
-        
         index_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
         index_pip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_PIP]
         index_dip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_DIP]
@@ -53,8 +52,6 @@ with mp_hands.Hands(
         tip_screen_y = index_tip.y*height
         dip_screen_y = index_dip.y*height
 
-
-
         if(tip_screen_y < dip_screen_y) and not isClicking:
           mouse.release()
           isClicking = True
@@ -63,19 +60,16 @@ with mp_hands.Hands(
           mouse.press()
           isClicking = False
 
-
         # The idea is that the previus position will influence
         # the next position according to some distance value
         # Dividing allows for a dampening effect.
         curX = preX + (index_knuck.x - preX) / 3
         curY = preY + (index_knuck.y - preY) / 3
 
-        mouse.move(-curX*width, curY*height)
+        mouse.move(width-(curX*width), curY*height)
 
         preX = curX
         preY = curY 
-
-        cv2.imshow('MediaPipe Hands', cv2.flip(image, 1))
 
     if cv2.waitKey(5) & 0xFF == 27:
       break
