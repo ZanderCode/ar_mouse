@@ -72,6 +72,7 @@ with mp_hands.Hands(
                 curY = preY + (index_knuck.y - preY) / 3
 
                 # TODO: send as bytes? prolly faster
+                # TODO: couple custom json object send encoded so that we can send more data
                 client.send(("x:" + str(width-(curX*width)) +
                             ", y:" + str(curY*height)).encode())
 
